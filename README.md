@@ -55,6 +55,39 @@ npm run dev
 
 Open `http://localhost:3000` in your browser. Keep the terminal window open while using the app.
 
+### 🛠 Terminal Installation Guide for Prerequisites
+
+If you prefer installing the required software via terminal instead of downloading from their websites, you can use the commands below based on your operating system:
+
+**Mac (using Homebrew):**
+```bash
+# Install Docker
+brew install --cask docker
+
+# Install Node.js and Python
+brew install node python
+```
+
+**Windows (using Winget - preinstalled on Windows 10/11):**
+```bash
+# Install Docker
+winget install Docker.DockerDesktop
+
+# Install Node.js and Python
+winget install OpenJS.NodeJS
+winget install Python.Python.3.11
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+# Install Docker
+sudo apt update
+sudo apt install docker.io docker-compose
+
+# Install Node.js and Python
+sudo apt install nodejs npm python3 python3-pip
+```
+
 The core architecture relies on Next.js API routes communicating with a custom singleton `QueueManager` (`src/lib/queueManager.ts`) that spawns asynchronous Python `child_process` instances.
 
 ### ⚠️ Disclaimer
@@ -103,6 +136,39 @@ npm run dev
 ```
 
 Ardından tarayıcınızda `http://localhost:3000` adresine gidin. Uygulamayı kullanırken terminal penceresini kapatmamalısınız.
+
+### 🛠 Gereksinimleri Terminalden Kurma Rehberi
+
+Eğer programları web sitelerinden indirmek yerine doğrudan terminal (komut satırı) üzerinden kurmak isterseniz, işletim sisteminize göre aşağıdaki komutları kullanabilirsiniz:
+
+**Mac (Homebrew ile):**
+```bash
+# Docker kurulumu
+brew install --cask docker
+
+# Node.js ve Python kurulumu
+brew install node python
+```
+
+**Windows (Winget ile - Windows 10/11'de yüklü gelir):**
+```bash
+# Docker kurulumu
+winget install Docker.DockerDesktop
+
+# Node.js ve Python kurulumu
+winget install OpenJS.NodeJS
+winget install Python.Python.3.11
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+# Docker kurulumu
+sudo apt update
+sudo apt install docker.io docker-compose
+
+# Node.js ve Python kurulumu
+sudo apt install nodejs npm python3 python3-pip
+```
 
 Mimari yapı; Next.js API yolları ile asenkron Python işlemlerini (`spawn`) yöneten özel bir kuyruk yöneticisi sınıfına (`src/lib/queueManager.ts`) dayanmaktadır. Pull Request (PR) gönderimlerine her zaman açığız!
 
