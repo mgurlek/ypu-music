@@ -63,6 +63,12 @@ Open `http://localhost:3000` in your browser. Keep the terminal window open whil
 
 The core architecture relies on Next.js API routes communicating with a custom singleton `QueueManager` (`src/lib/queueManager.ts`) that spawns asynchronous Python `child_process` instances.
 
+### 🔧 Troubleshooting
+
+**Docker Error on Windows (500 Internal Server Error / dockerDesktopLinuxEngine):**
+If you encounter this error on Windows while using Docker, it means the Windows Subsystem for Linux (WSL2) backend has frozen.
+* **Fix:** Open your terminal (PowerShell/CMD), type `wsl --shutdown` and press Enter. Then, completely close Docker Desktop from the system tray and open it again.
+
 ### ⚠️ Disclaimer
 This tool is built strictly for educational purposes and personal archiving. It does not promote or encourage the piracy of copyrighted material. Please support artists by using official music streaming platforms.
 
@@ -117,6 +123,12 @@ npm run dev
 Ardından tarayıcınızda `http://localhost:3000` adresine gidin. Uygulamayı kullanırken terminal penceresini kapatmamalısınız.
 
 Mimari yapı; Next.js API yolları ile asenkron Python işlemlerini (`spawn`) yöneten özel bir kuyruk yöneticisi sınıfına (`src/lib/queueManager.ts`) dayanmaktadır. Pull Request (PR) gönderimlerine her zaman açığız!
+
+### 🔧 Sık Karşılaşılan Sorunlar (Troubleshooting)
+
+**Windows'ta Docker 500 Internal Server Error Hatası:**
+Eğer Windows'ta Docker kullanırken `pipe/dockerDesktopLinuxEngine` veya `500 Internal Server Error` hatası alırsanız, bu arka plandaki WSL2 motorunun takılı kaldığını gösterir.
+* **Çözüm:** Terminalinizi (CMD veya PowerShell) açın, `wsl --shutdown` yazıp Enter'a basın. Ardından Docker Desktop uygulamasını sağ alt köşeden tamamen kapatıp (Quit) yeniden başlatın. Sorun düzelecektir.
 
 ### ⚠️ Yasal Uyarı
 Bu uygulama sadece açık kaynak geliştirme pratikleri, eğitim ve kişisel araştırmalar için tasarlanmıştır. Telif haklarıyla korunan eserlerin yasa dışı biçimde çoğaltılmasını desteklemez. Lütfen sanatçıları desteklemek adına resmi müzik servislerini kullanmaya özen gösterin.
