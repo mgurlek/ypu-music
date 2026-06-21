@@ -112,7 +112,8 @@ class QueueManager {
       `${safePlaylistName}/{title} - {artist}.{output-ext}`
     ];
 
-    this.activeProcess = spawn('python3', args, { cwd: downloadDir });
+    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+    this.activeProcess = spawn(pythonCmd, args, { cwd: downloadDir });
 
     this.activeProcess.stdout?.on('data', (data) => {
       const lines = data.toString().split('\n').filter((l: string) => l.trim() !== '');

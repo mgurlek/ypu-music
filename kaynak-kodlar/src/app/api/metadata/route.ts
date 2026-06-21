@@ -16,9 +16,10 @@ export async function POST(req: Request) {
     // Path to the python script
     const scriptPath = path.resolve(process.cwd(), 'scripts', 'get_playlist.py');
 
-    // Run python3 and capture output
+    // Run python and capture output
     // We increase maxBuffer because a 500-track playlist might output a lot of JSON
-    const { stdout, stderr } = await execAsync(`python3 "${scriptPath}" "${url}"`, {
+    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+    const { stdout, stderr } = await execAsync(`${pythonCmd} "${scriptPath}" "${url}"`, {
       maxBuffer: 1024 * 1024 * 5, // 5MB limit
     });
 
