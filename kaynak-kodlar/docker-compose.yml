@@ -1,8 +1,7 @@
-version: '3.8'
-
 services:
   spotdl-ui:
     build: .
+    image: spotdl-ui:latest
     container_name: spotdl-ui
     ports:
       - "3000:3000"
