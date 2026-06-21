@@ -39,7 +39,7 @@ docker-compose up --build
 4. Open `http://localhost:3000` in your browser. Downloaded songs will be saved to the `Indirilen-Muzikler` folder.
 
 #### Method 2: Manual Installation
-If you prefer not to use Docker, you need to install Node.js and Python manually first. You can download [Node.js](https://nodejs.org/) and [Python](https://www.python.org/downloads/) from their websites, or install them via terminal:
+If you prefer not to use Docker, you need to install Node.js (which includes `npm`) and Python manually first. You can download [Node.js](https://nodejs.org/) and [Python](https://www.python.org/downloads/) from their websites, or install them via terminal:
 - **Mac:** `brew install node python`
 - **Windows:** `winget install OpenJS.NodeJS` and `winget install Python.Python.3.11`
 - **Linux:** `sudo apt update && sudo apt install nodejs npm python3 python3-pip`
@@ -94,7 +94,7 @@ docker-compose up --build
 4. Tarayıcınızda `http://localhost:3000` adresine gidin. İndirilen şarkılar otomatik olarak ana dizindeki `Indirilen-Muzikler` klasörüne kaydedilecektir.
 
 #### Yöntem 2: Manuel Kurulum
-Eğer Docker kullanmak istemiyorsanız, bilgisayarınıza öncelikle Node.js ve Python yüklemeniz gerekmektedir. İsterseniz resmi sitelerinden ([Node.js](https://nodejs.org/), [Python](https://www.python.org/downloads/)) indirebilir, isterseniz de terminalden kurabilirsiniz:
+Eğer Docker kullanmak istemiyorsanız, bilgisayarınıza öncelikle Node.js (`npm` ile birlikte gelir) ve Python yüklemeniz gerekmektedir. İsterseniz resmi sitelerinden ([Node.js](https://nodejs.org/), [Python](https://www.python.org/downloads/)) indirebilir, isterseniz de terminalden kurabilirsiniz:
 - **Mac:** `brew install node python`
 - **Windows:** `winget install OpenJS.NodeJS` ve `winget install Python.Python.3.11`
 - **Linux:** `sudo apt update && sudo apt install nodejs npm python3 python3-pip`
