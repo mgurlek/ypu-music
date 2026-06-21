@@ -26,7 +26,10 @@ There are two ways to run the application: using Docker (recommended) or manuall
 #### Method 1: Using Docker (Recommended)
 Docker solves the problem of installing dependencies manually. You don't need Node.js or Python installed!
 
-1. Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop/) is installed and running.
+1. Make sure Docker is installed and running. If you don't have it, you can download [Docker Desktop](https://www.docker.com/products/docker-desktop/) or install it via terminal:
+   - **Mac:** `brew install --cask docker`
+   - **Windows:** `winget install Docker.DockerDesktop`
+   - **Linux:** `sudo apt update && sudo apt install docker.io docker-compose`
 2. Open your terminal in the project directory.
 3. Run the following commands:
 ```bash
@@ -36,7 +39,10 @@ docker-compose up --build
 4. Open `http://localhost:3000` in your browser. Downloaded songs will be saved to the `Indirilen-Muzikler` folder.
 
 #### Method 2: Manual Installation
-If you prefer not to use Docker, you need to install [Node.js](https://nodejs.org/) and [Python](https://www.python.org/downloads/) manually first.
+If you prefer not to use Docker, you need to install Node.js and Python manually first. You can download [Node.js](https://nodejs.org/) and [Python](https://www.python.org/downloads/) from their websites, or install them via terminal:
+- **Mac:** `brew install node python`
+- **Windows:** `winget install OpenJS.NodeJS` and `winget install Python.Python.3.11`
+- **Linux:** `sudo apt update && sudo apt install nodejs npm python3 python3-pip`
 
 ```bash
 # 1. Enter the source code directory
@@ -54,39 +60,6 @@ npm run dev
 ```
 
 Open `http://localhost:3000` in your browser. Keep the terminal window open while using the app.
-
-### 🛠 Terminal Installation Guide for Prerequisites
-
-If you prefer installing the required software via terminal instead of downloading from their websites, you can use the commands below based on your operating system:
-
-**Mac (using Homebrew):**
-```bash
-# Install Docker
-brew install --cask docker
-
-# Install Node.js and Python
-brew install node python
-```
-
-**Windows (using Winget - preinstalled on Windows 10/11):**
-```bash
-# Install Docker
-winget install Docker.DockerDesktop
-
-# Install Node.js and Python
-winget install OpenJS.NodeJS
-winget install Python.Python.3.11
-```
-
-**Linux (Ubuntu/Debian):**
-```bash
-# Install Docker
-sudo apt update
-sudo apt install docker.io docker-compose
-
-# Install Node.js and Python
-sudo apt install nodejs npm python3 python3-pip
-```
 
 The core architecture relies on Next.js API routes communicating with a custom singleton `QueueManager` (`src/lib/queueManager.ts`) that spawns asynchronous Python `child_process` instances.
 
@@ -108,7 +81,10 @@ Uygulamayı çalıştırmanın iki yolu vardır: Docker kullanarak (önerilen) v
 #### Yöntem 1: Docker Kullanarak (Önerilen)
 Docker kullanırsanız Node.js veya Python yükleme derdinden kurtulursunuz! Sistem her şeyi izole bir şekilde otomatik kurar.
 
-1. Bilgisayarınızda [Docker Desktop](https://www.docker.com/products/docker-desktop/)'ın yüklü ve açık olduğundan emin olun.
+1. Bilgisayarınızda Docker'ın yüklü ve açık olduğundan emin olun. Yoksa [Docker Desktop](https://www.docker.com/products/docker-desktop/)'ı indirebilir veya terminalden kurabilirsiniz:
+   - **Mac:** `brew install --cask docker`
+   - **Windows:** `winget install Docker.DockerDesktop`
+   - **Linux:** `sudo apt update && sudo apt install docker.io docker-compose`
 2. Proje klasöründe bir terminal açın.
 3. Aşağıdaki komutları çalıştırın:
 ```bash
@@ -118,7 +94,10 @@ docker-compose up --build
 4. Tarayıcınızda `http://localhost:3000` adresine gidin. İndirilen şarkılar otomatik olarak ana dizindeki `Indirilen-Muzikler` klasörüne kaydedilecektir.
 
 #### Yöntem 2: Manuel Kurulum
-Eğer Docker kullanmak istemiyorsanız, bilgisayarınıza öncelikle [Node.js](https://nodejs.org/) ve [Python](https://www.python.org/downloads/) yüklemeniz gerekmektedir. Yükledikten sonra:
+Eğer Docker kullanmak istemiyorsanız, bilgisayarınıza öncelikle Node.js ve Python yüklemeniz gerekmektedir. İsterseniz resmi sitelerinden ([Node.js](https://nodejs.org/), [Python](https://www.python.org/downloads/)) indirebilir, isterseniz de terminalden kurabilirsiniz:
+- **Mac:** `brew install node python`
+- **Windows:** `winget install OpenJS.NodeJS` ve `winget install Python.Python.3.11`
+- **Linux:** `sudo apt update && sudo apt install nodejs npm python3 python3-pip`
 
 ```bash
 # 1. Kodların olduğu klasöre girin
@@ -136,39 +115,6 @@ npm run dev
 ```
 
 Ardından tarayıcınızda `http://localhost:3000` adresine gidin. Uygulamayı kullanırken terminal penceresini kapatmamalısınız.
-
-### 🛠 Gereksinimleri Terminalden Kurma Rehberi
-
-Eğer programları web sitelerinden indirmek yerine doğrudan terminal (komut satırı) üzerinden kurmak isterseniz, işletim sisteminize göre aşağıdaki komutları kullanabilirsiniz:
-
-**Mac (Homebrew ile):**
-```bash
-# Docker kurulumu
-brew install --cask docker
-
-# Node.js ve Python kurulumu
-brew install node python
-```
-
-**Windows (Winget ile - Windows 10/11'de yüklü gelir):**
-```bash
-# Docker kurulumu
-winget install Docker.DockerDesktop
-
-# Node.js ve Python kurulumu
-winget install OpenJS.NodeJS
-winget install Python.Python.3.11
-```
-
-**Linux (Ubuntu/Debian):**
-```bash
-# Docker kurulumu
-sudo apt update
-sudo apt install docker.io docker-compose
-
-# Node.js ve Python kurulumu
-sudo apt install nodejs npm python3 python3-pip
-```
 
 Mimari yapı; Next.js API yolları ile asenkron Python işlemlerini (`spawn`) yöneten özel bir kuyruk yöneticisi sınıfına (`src/lib/queueManager.ts`) dayanmaktadır. Pull Request (PR) gönderimlerine her zaman açığız!
 
