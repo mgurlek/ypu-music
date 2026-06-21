@@ -14,9 +14,9 @@
 
 ## 🇺🇸 English Documentation
 
-**YPU Music** is a fully open-source, modern desktop web application that allows you to download Spotify playlists and tracks as MP3 files with metadata intact.
+**YPU Music** is a fully open-source, desktop web application that allows you to download Spotify playlists and tracks as MP3 files with metadata intact.
 
-Designed to perfectly mimic the native Spotify desktop UI, it features a robust background download queue, smart error handling, and a one-click launcher for a zero-friction experience.
+Designed to download musics to my COROS Pace 4 watch, you can use it for what ever you want
 
 
 ### Quick Start / How to Run
@@ -31,6 +31,7 @@ cd kaynak-kodlar
 npm install
 
 # 3. Install spotdl (Python is required)
+
 # For Mac users: you might need to use `pip3 install spotdl --break-system-packages`
 pip install spotdl
 
@@ -49,9 +50,8 @@ This tool is built strictly for educational purposes and personal archiving. It 
 
 ## 🇹🇷 Türkçe Dokümantasyon
 
-**YPU Music**, Spotify çalma listelerini ve şarkılarını metadata'ları (kapak fotoğrafı, sanatçı bilgisi vb.) korunmuş biçimde MP3 formatında indirmenizi sağlayan tamamen açık kaynaklı bir masaüstü web uygulamasıdır.
-
-Orijinal Spotify masaüstü arayüzü baz alınarak tasarlanmıştır. Güçlü bir arka plan indirme kuyruğu, akıllı hata yakalama sistemi ve herkesin kullanabileceği tek tıkla başlatma özelliği sunar.
+**YPU Music** Spotify çalma listelerini ve parçaları metadata korunmuş bir şekilde MP3 dosyaları olarak indirmenizi sağlayan, tamamen açık kaynaklı bir masaüstü web uygulamasıdır.
+COROS Pace 4 saatime müzik indirmek amacıyla tasarlanmış olsa da, siz dilediğiniz amaçla kullanabilirsiniz.
 
 
 ### Nasıl Çalıştırılır
