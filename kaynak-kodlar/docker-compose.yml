@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  spotdl-ui:
+    build: .
+    container_name: spotdl-ui
+    ports:
+      - "3000:3000"
+    volumes:
+      # Map the local "downloads" folder to "/app/downloads" in the container
+      # This ensures downloaded music files are saved to your actual computer, not lost inside Docker!
+      - ./downloads:/app/downloads
+    restart: unless-stopped
