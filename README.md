@@ -21,7 +21,22 @@ Designed to download musics to my COROS Pace 4 watch, you can use it for what ev
 
 ### Quick Start / How to Run
 
-To run the application locally, you will need a terminal. Make sure you have Node.js and Python installed on your system.
+There are two ways to run the application: using Docker (recommended) or manually.
+
+#### Method 1: Using Docker (Recommended)
+Docker solves the problem of installing dependencies manually. You don't need Node.js or Python installed!
+
+1. Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop/) is installed and running.
+2. Open your terminal in the project directory.
+3. Run the following commands:
+```bash
+cd kaynak-kodlar
+docker-compose up --build
+```
+4. Open `http://localhost:3000` in your browser. Downloaded songs will be saved to the `Indirilen-Muzikler` folder.
+
+#### Method 2: Manual Installation
+If you prefer not to use Docker, you need to install [Node.js](https://nodejs.org/) and [Python](https://www.python.org/downloads/) manually first.
 
 ```bash
 # 1. Enter the source code directory
@@ -31,7 +46,6 @@ cd kaynak-kodlar
 npm install
 
 # 3. Install spotdl (Python is required)
-
 # For Mac users: you might need to use `pip3 install spotdl --break-system-packages`
 pip install spotdl
 
@@ -56,7 +70,22 @@ COROS Pace 4 saatime müzik indirmek amacıyla tasarlanmış olsa da, siz diledi
 
 ### Nasıl Çalıştırılır
 
-Uygulamayı yerel bilgisayarınızda çalıştırmak için terminal (veya Komut İstemi) kullanmanız gerekir. Bilgisayarınızda Node.js ve Python'un yüklü olduğundan emin olun.
+Uygulamayı çalıştırmanın iki yolu vardır: Docker kullanarak (önerilen) veya manuel olarak.
+
+#### Yöntem 1: Docker Kullanarak (Önerilen)
+Docker kullanırsanız Node.js veya Python yükleme derdinden kurtulursunuz! Sistem her şeyi izole bir şekilde otomatik kurar.
+
+1. Bilgisayarınızda [Docker Desktop](https://www.docker.com/products/docker-desktop/)'ın yüklü ve açık olduğundan emin olun.
+2. Proje klasöründe bir terminal açın.
+3. Aşağıdaki komutları çalıştırın:
+```bash
+cd kaynak-kodlar
+docker-compose up --build
+```
+4. Tarayıcınızda `http://localhost:3000` adresine gidin. İndirilen şarkılar otomatik olarak ana dizindeki `Indirilen-Muzikler` klasörüne kaydedilecektir.
+
+#### Yöntem 2: Manuel Kurulum
+Eğer Docker kullanmak istemiyorsanız, bilgisayarınıza öncelikle [Node.js](https://nodejs.org/) ve [Python](https://www.python.org/downloads/) yüklemeniz gerekmektedir. Yükledikten sonra:
 
 ```bash
 # 1. Kodların olduğu klasöre girin
