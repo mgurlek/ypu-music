@@ -14,14 +14,35 @@
 
 ## 🇺🇸 English Documentation
 
-**YPU Music** is a fully open-source, modern desktop web application that allows you to download Spotify playlists and tracks as MP3 files with metadata intact.
+**YPU Music** is a fully open-source, desktop web application that allows you to download Spotify playlists and tracks as MP3 files with metadata intact.
 
-Designed to perfectly mimic the native Spotify desktop UI, it features a robust background download queue, smart error handling, and a one-click launcher for a zero-friction experience.
+Designed to download musics to my COROS Pace 4 watch, you can use it for what ever you want
 
 
 ### Quick Start / How to Run
 
-To run the application locally, you will need a terminal. Make sure you have Node.js and Python installed on your system.
+There are two ways to run the application: using Docker (recommended) or manually.
+
+#### Method 1: Using Docker (Recommended)
+Docker solves the problem of installing dependencies manually. You don't need Node.js or Python installed!
+
+1. Make sure Docker is installed and running. If you don't have it, you can download [Docker Desktop](https://www.docker.com/products/docker-desktop/) or install it via terminal:
+   - **Mac:** `brew install --cask docker`
+   - **Windows:** `winget install Docker.DockerDesktop`
+   - **Linux:** `sudo apt update && sudo apt install docker.io docker-compose`
+2. Open your terminal in the project directory.
+3. Run the following commands:
+```bash
+cd kaynak-kodlar
+docker-compose up --build
+```
+4. Open `http://localhost:3000` in your browser. Downloaded songs will be saved to the `Indirilen-Muzikler` folder.
+
+#### Method 2: Manual Installation
+If you prefer not to use Docker, you need to install Node.js (which includes `npm`) and Python manually first. You can download [Node.js](https://nodejs.org/) and [Python](https://www.python.org/downloads/) from their websites, or install them via terminal:
+- **Mac:** `brew install node python`
+- **Windows:** `winget install OpenJS.NodeJS` and `winget install Python.Python.3.11`
+- **Linux:** `sudo apt update && sudo apt install nodejs npm python3 python3-pip`
 
 ```bash
 # 1. Enter the source code directory
@@ -42,6 +63,12 @@ Open `http://localhost:3000` in your browser. Keep the terminal window open whil
 
 The core architecture relies on Next.js API routes communicating with a custom singleton `QueueManager` (`src/lib/queueManager.ts`) that spawns asynchronous Python `child_process` instances.
 
+### 🔧 Troubleshooting
+
+**Docker Error on Windows (500 Internal Server Error / dockerDesktopLinuxEngine):**
+If you encounter this error on Windows while using Docker, it means the Windows Subsystem for Linux (WSL2) backend has frozen.
+* **Fix:** Open your terminal (PowerShell/CMD), type `wsl --shutdown` and press Enter. Then, completely close Docker Desktop from the system tray and open it again.
+
 ### ⚠️ Disclaimer
 This tool is built strictly for educational purposes and personal archiving. It does not promote or encourage the piracy of copyrighted material. Please support artists by using official music streaming platforms.
 
@@ -49,14 +76,34 @@ This tool is built strictly for educational purposes and personal archiving. It 
 
 ## 🇹🇷 Türkçe Dokümantasyon
 
-**YPU Music**, Spotify çalma listelerini ve şarkılarını metadata'ları (kapak fotoğrafı, sanatçı bilgisi vb.) korunmuş biçimde MP3 formatında indirmenizi sağlayan tamamen açık kaynaklı bir masaüstü web uygulamasıdır.
-
-Orijinal Spotify masaüstü arayüzü baz alınarak tasarlanmıştır. Güçlü bir arka plan indirme kuyruğu, akıllı hata yakalama sistemi ve herkesin kullanabileceği tek tıkla başlatma özelliği sunar.
+**YPU Music** Spotify çalma listelerini ve parçaları metadata korunmuş bir şekilde MP3 dosyaları olarak indirmenizi sağlayan, tamamen açık kaynaklı bir masaüstü web uygulamasıdır.
+COROS Pace 4 saatime müzik indirmek amacıyla tasarlanmış olsa da, siz dilediğiniz amaçla kullanabilirsiniz.
 
 
 ### Nasıl Çalıştırılır
 
-Uygulamayı yerel bilgisayarınızda çalıştırmak için terminal (veya Komut İstemi) kullanmanız gerekir. Bilgisayarınızda Node.js ve Python'un yüklü olduğundan emin olun.
+Uygulamayı çalıştırmanın iki yolu vardır: Docker kullanarak (önerilen) veya manuel olarak.
+
+#### Yöntem 1: Docker Kullanarak (Önerilen)
+Docker kullanırsanız Node.js veya Python yükleme derdinden kurtulursunuz! Sistem her şeyi izole bir şekilde otomatik kurar.
+
+1. Bilgisayarınızda Docker'ın yüklü ve açık olduğundan emin olun. Yoksa [Docker Desktop](https://www.docker.com/products/docker-desktop/)'ı indirebilir veya terminalden kurabilirsiniz:
+   - **Mac:** `brew install --cask docker`
+   - **Windows:** `winget install Docker.DockerDesktop`
+   - **Linux:** `sudo apt update && sudo apt install docker.io docker-compose`
+2. Proje klasöründe bir terminal açın.
+3. Aşağıdaki komutları çalıştırın:
+```bash
+cd kaynak-kodlar
+docker-compose up --build
+```
+4. Tarayıcınızda `http://localhost:3000` adresine gidin. İndirilen şarkılar otomatik olarak ana dizindeki `Indirilen-Muzikler` klasörüne kaydedilecektir.
+
+#### Yöntem 2: Manuel Kurulum
+Eğer Docker kullanmak istemiyorsanız, bilgisayarınıza öncelikle Node.js (`npm` ile birlikte gelir) ve Python yüklemeniz gerekmektedir. İsterseniz resmi sitelerinden ([Node.js](https://nodejs.org/), [Python](https://www.python.org/downloads/)) indirebilir, isterseniz de terminalden kurabilirsiniz:
+- **Mac:** `brew install node python`
+- **Windows:** `winget install OpenJS.NodeJS` ve `winget install Python.Python.3.11`
+- **Linux:** `sudo apt update && sudo apt install nodejs npm python3 python3-pip`
 
 ```bash
 # 1. Kodların olduğu klasöre girin
@@ -76,6 +123,12 @@ npm run dev
 Ardından tarayıcınızda `http://localhost:3000` adresine gidin. Uygulamayı kullanırken terminal penceresini kapatmamalısınız.
 
 Mimari yapı; Next.js API yolları ile asenkron Python işlemlerini (`spawn`) yöneten özel bir kuyruk yöneticisi sınıfına (`src/lib/queueManager.ts`) dayanmaktadır. Pull Request (PR) gönderimlerine her zaman açığız!
+
+### 🔧 Sık Karşılaşılan Sorunlar (Troubleshooting)
+
+**Windows'ta Docker 500 Internal Server Error Hatası:**
+Eğer Windows'ta Docker kullanırken `pipe/dockerDesktopLinuxEngine` veya `500 Internal Server Error` hatası alırsanız, bu arka plandaki WSL2 motorunun takılı kaldığını gösterir.
+* **Çözüm:** Terminalinizi (CMD veya PowerShell) açın, `wsl --shutdown` yazıp Enter'a basın. Ardından Docker Desktop uygulamasını sağ alt köşeden tamamen kapatıp (Quit) yeniden başlatın. Sorun düzelecektir.
 
 ### ⚠️ Yasal Uyarı
 Bu uygulama sadece açık kaynak geliştirme pratikleri, eğitim ve kişisel araştırmalar için tasarlanmıştır. Telif haklarıyla korunan eserlerin yasa dışı biçimde çoğaltılmasını desteklemez. Lütfen sanatçıları desteklemek adına resmi müzik servislerini kullanmaya özen gösterin.
