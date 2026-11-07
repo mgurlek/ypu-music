@@ -11,8 +11,9 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
 
-# Install spotdl
-RUN pip install spotdl
+# Install Python dependencies (spotdl)
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the Next.js app
 COPY . .

@@ -77,7 +77,7 @@ git clone https://github.com/mgurlek/ypu-music.git
 cd ypu-music/kaynak-kodlar
 
 npm install
-pip install spotdl      # macOS: pip3 install spotdl --break-system-packages
+pip install -r requirements.txt      # macOS: pip3 install -r requirements.txt --break-system-packages
 npm run dev
 ```
 
@@ -102,7 +102,7 @@ Browser ──► Next.js API routes ──► QueueManager (singleton)
 |---------|-----|
 | **Docker on Windows: `500 Internal Server Error` / `dockerDesktopLinuxEngine`** | The WSL2 backend froze. Run `wsl --shutdown` in PowerShell/CMD, quit Docker Desktop from the system tray and start it again. |
 | **"FFmpeg is not installed"** (manual install) | Install FFmpeg (see table above) or run `spotdl --download-ffmpeg`, then restart the app. |
-| **"Python or spotDL not found"** | Check that `python --version` (Windows) or `python3 --version` (macOS/Linux) works and that `pip install spotdl` finished. |
+| **"Python or spotDL not found"** | Check that `python --version` (Windows) or `python3 --version` (macOS/Linux) works and that `pip install -r requirements.txt` finished. |
 | **"Too many requests"** | YouTube rate-limited you. Wait a few minutes and retry. |
 
 ### 🤝 Contributing
@@ -177,7 +177,7 @@ git clone https://github.com/mgurlek/ypu-music.git
 cd ypu-music/kaynak-kodlar
 
 npm install
-pip install spotdl      # macOS'ta hata alırsanız: pip3 install spotdl --break-system-packages
+pip install -r requirements.txt      # macOS'ta hata alırsanız: pip3 install -r requirements.txt --break-system-packages
 npm run dev
 ```
 
@@ -202,7 +202,7 @@ Tarayıcı ──► Next.js API yolları ──► QueueManager (singleton)
 |-------|-------|
 | **Windows'ta Docker: `500 Internal Server Error` / `dockerDesktopLinuxEngine`** | WSL2 motoru takılmıştır. PowerShell/CMD'de `wsl --shutdown` yazın, Docker Desktop'ı sistem tepsisinden kapatıp yeniden açın. |
 | **"FFmpeg kurulu değil"** (manuel kurulum) | FFmpeg'i kurun (yukarıdaki tablo) veya `spotdl --download-ffmpeg` çalıştırın, uygulamayı yeniden başlatın. |
-| **"Python veya spotDL bulunamadı"** | Windows'ta `python --version`, macOS/Linux'ta `python3 --version` çalışıyor mu ve `pip install spotdl` bitti mi kontrol edin. |
+| **"Python veya spotDL bulunamadı"** | Windows'ta `python --version`, macOS/Linux'ta `python3 --version` çalışıyor mu ve `pip install -r requirements.txt` bitti mi kontrol edin. |
 | **"Çok fazla istek"** | YouTube geçici olarak engelledi. Birkaç dakika bekleyip tekrar deneyin. |
 
 ### 🤝 Katkı
