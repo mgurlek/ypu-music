@@ -1,5 +1,6 @@
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
+import fs from 'fs';
 
 export type Track = {
   id: string;
@@ -102,6 +103,7 @@ class QueueManager {
     this.addLog(`[INFO] Starting download for: ${nextItem.track.name} by ${nextItem.track.artist}`);
 
     const downloadDir = process.env.DOWNLOAD_DIR || path.resolve(process.cwd(), '../Indirilen-Muzikler');
+    fs.mkdirSync(downloadDir, { recursive: true });
     const safePlaylistName = nextItem.playlistName.replace(/[/\\?%*:|"<>]/g, '-');
 
     const args = [
