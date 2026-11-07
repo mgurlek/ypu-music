@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 export async function POST(req: Request) {
   try {
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     // Run python and capture output
     // We increase maxBuffer because a 500-track playlist might output a lot of JSON
     const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
-    const { stdout, stderr } = await execAsync(`${pythonCmd} "${scriptPath}" "${url}"`, {
+    const { stdout, stderr } = await execFileAsync(pythonCmd, [scriptPath, String(url)], {
       maxBuffer: 1024 * 1024 * 5, // 5MB limit
     });
 
