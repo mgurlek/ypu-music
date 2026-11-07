@@ -1,10 +1,13 @@
 <div align="center">
-  <
-  <h1>YPU Music </h1>
+  <h1>🎵 YPU Music</h1>
   <p><em>Çetrefilli adamların kulübü.</em></p>
+  <p>Download Spotify playlists &amp; tracks as tagged MP3s, built for offline players and sports watches.</p>
 
-  [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-  [![SpotDL](https://img.shields.io/badge/SpotDL-v4-blue?style=for-the-badge&logo=python)](https://github.com/spotDL/spotify-downloader)
+  [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+  [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+  [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+  [![SpotDL](https://img.shields.io/badge/SpotDL-v4-blue?style=for-the-badge&logo=python&logoColor=white)](https://github.com/spotDL/spotify-downloader)
   [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 </div>
 
@@ -16,10 +19,26 @@
 
 **YPU Music** is a fully open-source, desktop web application that allows you to download Spotify playlists and tracks as MP3 files with metadata intact.
 
-Designed to download musics to my COROS Pace 4 watch, you can use it for what ever you want
+Designed to download musics to my COROS Pace 4 watch, you can use it for whatever you want.
 
 
-### Quick Start / How to Run
+### ✨ Features
+
+- Paste a Spotify playlist or track link and download it as MP3 with metadata (title, artist, album, cover art) intact
+- Background download queue that processes tracks asynchronously
+- One-command setup with Docker, or run it manually with Node.js + Python
+- Simple web UI that runs locally on your machine
+
+### 🧰 Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend / API | Next.js 16 (App Router), React 19, TypeScript |
+| Download engine | [spotDL](https://github.com/spotDL/spotify-downloader) (Python) |
+| Playlist parsing | `spotify-url-info` + `scripts/get_playlist.py` |
+| Packaging | Docker / docker-compose |
+
+### 🚀 Quick Start / How to Run
 
 There are two ways to run the application: using Docker (recommended) or manually.
 
@@ -80,7 +99,23 @@ This tool is built strictly for educational purposes and personal archiving. It 
 COROS Pace 4 saatime müzik indirmek amacıyla tasarlanmış olsa da, siz dilediğiniz amaçla kullanabilirsiniz.
 
 
-### Nasıl Çalıştırılır
+### ✨ Özellikler
+
+- Spotify çalma listesi veya parça linkini yapıştırın, metadata (başlık, sanatçı, albüm, kapak) korunmuş MP3 olarak indirin
+- Parçaları arka planda sırayla işleyen indirme kuyruğu
+- Docker ile tek komutla kurulum veya Node.js + Python ile manuel çalıştırma
+- Bilgisayarınızda yerel çalışan sade web arayüzü
+
+### 🧰 Teknolojiler
+
+| Katman | Teknoloji |
+|--------|-----------|
+| Arayüz / API | Next.js 16 (App Router), React 19, TypeScript |
+| İndirme motoru | [spotDL](https://github.com/spotDL/spotify-downloader) (Python) |
+| Liste ayrıştırma | `spotify-url-info` + `scripts/get_playlist.py` |
+| Paketleme | Docker / docker-compose |
+
+### 🚀 Nasıl Çalıştırılır
 
 Uygulamayı çalıştırmanın iki yolu vardır: Docker kullanarak (önerilen) veya manuel olarak.
 
@@ -132,3 +167,9 @@ Eğer Windows'ta Docker kullanırken `pipe/dockerDesktopLinuxEngine` veya `500 I
 
 ### ⚠️ Yasal Uyarı
 Bu uygulama sadece açık kaynak geliştirme pratikleri, eğitim ve kişisel araştırmalar için tasarlanmıştır. Telif haklarıyla korunan eserlerin yasa dışı biçimde çoğaltılmasını desteklemez. Lütfen sanatçıları desteklemek adına resmi müzik servislerini kullanmaya özen gösterin.
+
+---
+
+## 📄 License / Lisans
+
+Distributed under the [MIT License](LICENSE). / [MIT Lisansı](LICENSE) ile dağıtılmaktadır.
