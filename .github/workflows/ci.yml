@@ -166,6 +166,14 @@ jobs:
             -RedirectStandardError "$env:RUNNER_TEMP\launcher.err.log" -WindowStyle Hidden -PassThru
           Set-Content -Path "$env:RUNNER_TEMP\launcher.pid" -Value $p.Id
           Write-Host "launcher pid $($p.Id)"
+          # If the launcher dies at once, say so with its exit code and the end of its output
+          # (annotations are visible without signing in to GitHub).
+          Start-Sleep -Seconds 6
+          if ($p.HasExited) {
+            $tail = Get-Content "$env:RUNNER_TEMP\launcher.out.log", "$env:RUNNER_TEMP\launcher.err.log" -ErrorAction SilentlyContinue |
+              Select-Object -Last 45 | ForEach-Object { ($_ -replace '%', '%25') -replace '\r', '' }
+            Write-Host "::error title=launcher exited at once (exit code $($p.ExitCode))::$($tail -join '%0A')"
+          }
 
       - name: '[win] wait for the app (max 12 min), then smoke test'
         if: runner.os == 'Windows'
@@ -272,7 +280,10 @@ jobs:
           [ -x "$py" ] || { echo 'private virtualenv python not found'; exit 1; }
           "$py" -c "import sys, spotdl, yt_dlp; print('venv python', sys.version.split()[0], '(matrix asked for ${{ matrix.python }})')"
           ff=$(command -v ffmpeg || true)
-          if [ -z "$ff" ] && [ -x "$HOME/.spotdl/ffmpeg" ]; then ff="$HOME/.spotdl/ffmpeg"; fi
+          # spotDL keeps its own copy in ~/.spotdl (macOS) or ~/.config/spotdl (Linux)
+          for c in "$HOME/.spotdl/ffmpeg" "$HOME/.config/spotdl/ffmpeg"; do
+            if [ -z "$ff" ] && [ -x "$c" ]; then ff="$c"; fi
+          done
           [ -n "$ff" ] || { echo 'ffmpeg not found'; exit 1; }
           "$ff" -version | head -n 1
           [ -d Indirilen-Muzikler ] || { echo 'Indirilen-Muzikler folder missing'; exit 1; }
@@ -315,7 +326,12 @@ jobs:
         if: failure()
         shell: bash
         run: |
-          for f in "$RUNNER_TEMP"/launcher-logs/*; do echo "::group::$f"; tail -n 100 "$f"; echo '::endgroup::'; done
+          for f in "$RUNNER_TEMP"/launcher-logs/*; do
+            echo "::group::$f"; tail -n 100 "$f"; echo '::endgroup::'
+            # Also publish the end of each log as an annotation: those can be read without signing in.
+            msg=$(tail -n 40 "$f" | tr -d '\r' | sed -e 's/%/%25/g' | awk 'BEGIN{ORS="%0A"} {print substr($0,1,300)}')
+            echo "::error title=$(basename "$f")::${msg}"
+          done
 
       - uses: actions/upload-artifact@v7
         if: always()
