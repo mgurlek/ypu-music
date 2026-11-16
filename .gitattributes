@@ -1,0 +1,21 @@
+# Normalise line endings. The launcher scripts MUST keep their exact endings:
+# a CRLF in a .sh/.command file breaks it on macOS/Linux ("bad interpreter: /bin/bash^M"),
+# and a .bat file needs CRLF to run reliably on Windows.
+* text=auto
+*.sh text eol=lf
+*.command text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.py text eol=lf
+Dockerfile text eol=lf
+
+# Binary files: never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.mp3 binary
