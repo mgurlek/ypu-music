@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "YPU Music Downloader",
-  description: "Download Spotify playlists directly as MP3",
+  description: "Download Spotify playlists and songs as MP3 files on your own computer.",
 };
 
 export default function RootLayout({
