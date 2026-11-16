@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# python virtualenv and spotdl data created by the launcher scripts
+.venv/
+.spotdl/
