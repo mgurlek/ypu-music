@@ -1,0 +1,32 @@
+name: Bug report / Hata bildirimi
+description: Something does not work / Bir şey çalışmıyor
+labels: [bug]
+body:
+  - type: dropdown
+    id: os
+    attributes:
+      label: System / Sistem
+      options: [Windows 11, Windows 10, macOS, Linux, Docker, Other]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: System version and chip / Sürüm ve işlemci
+      placeholder: "e.g. macOS 14, Apple Silicon / Windows 11, x64"
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened? What did you expect? / Ne oldu? Ne bekliyordun?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / Nasıl tekrarlanır
+      placeholder: "1. Double-click Start file  2. Paste link ..."
+  - type: textarea
+    id: log
+    attributes:
+      label: Last lines of the black window or "Show technical details" / Siyah pencerenin son satırları
+      render: text
