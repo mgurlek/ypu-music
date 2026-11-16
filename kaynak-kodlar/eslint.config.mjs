@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The launcher's private Python folder holds JavaScript files of its own
+    // (spotDL's web UI): they are not ours to lint. Downloads are not code.
+    ".venv/**",
+    "Indirilen-Muzikler/**",
   ]),
 ]);
 

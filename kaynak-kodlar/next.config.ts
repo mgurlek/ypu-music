@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // The app shows no images, so switch off the image-optimizer endpoint.
+  images: { unoptimized: true },
 };
 
 export default nextConfig;
