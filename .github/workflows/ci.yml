@@ -156,88 +156,75 @@ jobs:
           if ($rc -ne 1) { throw "expected exit code 1 before setup, got $rc" }
           exit 0
 
-      - name: '[win] start the launcher in the background'
+      # On Windows runners a process started with Start-Process is killed when its step ends
+      # (Linux and macOS keep it alive). So ONE step starts the launcher, waits for it, tests it
+      # and stops it.
+      - name: '[win] run the launcher, smoke test it, check the results, stop it'
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $bat = Join-Path $env:GITHUB_WORKSPACE $env:SCRIPT
+          $out = "$env:RUNNER_TEMP\launcher.out.log"
+          $err = "$env:RUNNER_TEMP\launcher.err.log"
+          # Annotations can be read without signing in to GitHub, job logs cannot.
+          function Annotate([string]$title) {
+            $tail = Get-Content $out, $err -ErrorAction SilentlyContinue | Select-Object -Last 45 |
+              ForEach-Object { ($_ -replace '%', '%25') -replace '\r', '' }
+            Write-Host "::error title=$title::$($tail -join '%0A')"
+          }
           $p = Start-Process -FilePath cmd.exe -ArgumentList '/d', '/c', "`"$bat`"" -WorkingDirectory $env:GITHUB_WORKSPACE `
-            -RedirectStandardOutput "$env:RUNNER_TEMP\launcher.out.log" `
-            -RedirectStandardError "$env:RUNNER_TEMP\launcher.err.log" -WindowStyle Hidden -PassThru
+            -RedirectStandardOutput $out -RedirectStandardError $err -WindowStyle Hidden -PassThru
+          $null = $p.Handle   # keep the handle open so ExitCode can be read later
           Set-Content -Path "$env:RUNNER_TEMP\launcher.pid" -Value $p.Id
           Write-Host "launcher pid $($p.Id)"
-          # If the launcher dies at once, say so with its exit code and the end of its output
-          # (annotations are visible without signing in to GitHub).
-          Start-Sleep -Seconds 6
-          if ($p.HasExited) {
-            $tail = Get-Content "$env:RUNNER_TEMP\launcher.out.log", "$env:RUNNER_TEMP\launcher.err.log" -ErrorAction SilentlyContinue |
-              Select-Object -Last 45 | ForEach-Object { ($_ -replace '%', '%25') -replace '\r', '' }
-            Write-Host "::error title=launcher exited at once (exit code $($p.ExitCode))::$($tail -join '%0A')"
-          }
-
-      - name: '[win] wait for the app (max 12 min), then smoke test'
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $launcher = [int](Get-Content "$env:RUNNER_TEMP\launcher.pid")
-          $deadline = (Get-Date).AddMinutes(12)
-          $up = $false
-          while (-not $up -and (Get-Date) -lt $deadline) {
-            try { $up = (Invoke-WebRequest -Uri http://127.0.0.1:3000/api/queue -UseBasicParsing -TimeoutSec 5).StatusCode -eq 200 } catch { }
-            if (-not $up -and -not (Get-Process -Id $launcher -ErrorAction SilentlyContinue)) {
-              Get-Content "$env:RUNNER_TEMP\launcher.out.log", "$env:RUNNER_TEMP\launcher.err.log" | Write-Host
-              throw 'the launcher exited before the app answered'
+          try {
+            # 1) wait for the app (max 12 minutes)
+            $deadline = (Get-Date).AddMinutes(12)
+            $up = $false
+            while (-not $up -and (Get-Date) -lt $deadline) {
+              try { $up = (Invoke-WebRequest -Uri http://127.0.0.1:3000/api/queue -UseBasicParsing -TimeoutSec 5).StatusCode -eq 200 } catch { }
+              if (-not $up -and $p.HasExited) { throw "the launcher exited with code $($p.ExitCode) before the app answered" }
+              if (-not $up) { Start-Sleep -Seconds 5 }
             }
-            if (-not $up) { Start-Sleep -Seconds 5 }
-          }
-          if (-not $up) { throw 'the app did not answer within 12 minutes' }
-          node kaynak-kodlar/scripts/smoke-test.mjs http://127.0.0.1:3000
-          if ($LASTEXITCODE -ne 0) { throw 'smoke test failed' }
-          exit 0
+            if (-not $up) { throw 'the app did not answer within 12 minutes' }
 
-      - name: '[win] setup results (venv, spotdl, ffmpeg, download folder)'
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          # the launcher uses the short %LOCALAPPDATA% folder when the repo path is long
-          $py = @("$env:GITHUB_WORKSPACE\kaynak-kodlar\.venv\Scripts\python.exe", "$env:LOCALAPPDATA\YPU-Music\venv\Scripts\python.exe") |
-            Where-Object { Test-Path $_ } | Select-Object -First 1
-          if (-not $py) { throw 'private virtualenv python not found' }
-          & $py -c "import sys, spotdl, yt_dlp; print('venv python', sys.version.split()[0], '(matrix asked for ${{ matrix.python }})')"
-          if ($LASTEXITCODE -ne 0) { throw 'import spotdl, yt_dlp failed in the venv' }
-          $ff = (Get-Command ffmpeg -ErrorAction SilentlyContinue).Source
-          if (-not $ff -and (Test-Path "$env:USERPROFILE\.spotdl\ffmpeg.exe")) { $ff = "$env:USERPROFILE\.spotdl\ffmpeg.exe" }
-          $ffok = $false
-          if ($ff) { $v = & $ff -version; $ffok = ($LASTEXITCODE -eq 0); Write-Host "ffmpeg: $ff ($($v | Select-Object -First 1))" }
-          if (-not $ffok) {
-            if ($env:WARN_ONLY -eq 'true') { Write-Host '::warning::ffmpeg is missing (expected on Windows ARM64)' } else { throw 'ffmpeg is not working' }
-          }
-          if (-not (Test-Path "$env:GITHUB_WORKSPACE\Indirilen-Muzikler" -PathType Container)) { throw 'Indirilen-Muzikler folder missing' }
-          exit 0
+            # 2) smoke test against the running app
+            node kaynak-kodlar/scripts/smoke-test.mjs http://127.0.0.1:3000
+            if ($LASTEXITCODE -ne 0) { throw 'smoke test failed' }
 
-      - name: '[win] --check while the app runs (port 3000 is busy, so 3001)'
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $out = & cmd.exe /d /c ".\$env:SCRIPT --check" | Out-String
-          $rc = $LASTEXITCODE
-          Write-Host $out
-          Write-Host "exit code: $rc"
-          if ($env:WARN_ONLY -eq 'true') {
-            # a missing ffmpeg/deno makes --check exit 1 here; the table must still be printed
-            if ($out -notmatch 'STATUS') { throw '--check printed no status table' }
-            exit 0
-          }
-          if ($rc -ne 0 -or $out -notmatch '(?m)^\s+READY / HAZIR\s*$') { throw "expected exit 0 and READY, got $rc" }
-          if ($out -notmatch 'Free port\s*:\s*3001') { throw 'expected the port check to pick 3001' }
-          exit 0
+            # 3) results of the setup (the launcher uses the short %LOCALAPPDATA% folder when the repo path is long)
+            $py = @("$env:GITHUB_WORKSPACE\kaynak-kodlar\.venv\Scripts\python.exe", "$env:LOCALAPPDATA\YPU-Music\venv\Scripts\python.exe") |
+              Where-Object { Test-Path $_ } | Select-Object -First 1
+            if (-not $py) { throw 'private virtualenv python not found' }
+            & $py -c "import sys, spotdl, yt_dlp; print('venv python', sys.version.split()[0], '(matrix asked for ${{ matrix.python }})')"
+            if ($LASTEXITCODE -ne 0) { throw 'import spotdl, yt_dlp failed in the venv' }
+            $ff = (Get-Command ffmpeg -ErrorAction SilentlyContinue).Source
+            if (-not $ff -and (Test-Path "$env:USERPROFILE\.spotdl\ffmpeg.exe")) { $ff = "$env:USERPROFILE\.spotdl\ffmpeg.exe" }
+            $ffok = $false
+            if ($ff) { $v = & $ff -version; $ffok = ($LASTEXITCODE -eq 0); Write-Host "ffmpeg: $ff ($($v | Select-Object -First 1))" }
+            if (-not $ffok) {
+              if ($env:WARN_ONLY -eq 'true') { Write-Host '::warning::ffmpeg is missing (expected on Windows ARM64)' } else { throw 'ffmpeg is not working' }
+            }
+            if (-not (Test-Path "$env:GITHUB_WORKSPACE\Indirilen-Muzikler" -PathType Container)) { throw 'Indirilen-Muzikler folder missing' }
 
-      - name: '[win] stop the server and every child'
-        if: always() && runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          if (Test-Path "$env:RUNNER_TEMP\launcher.pid") { taskkill /PID (Get-Content "$env:RUNNER_TEMP\launcher.pid") /T /F }
-          exit 0
+            # 4) --check while the app runs (port 3000 is busy, so the next free port is reported)
+            $chk = & cmd.exe /d /c ".\$env:SCRIPT --check" | Out-String
+            $rc = $LASTEXITCODE
+            Write-Host $chk
+            Write-Host "exit code: $rc"
+            if ($env:WARN_ONLY -eq 'true') {
+              # a missing ffmpeg/deno makes --check exit 1 here; the table must still be printed
+              if ($chk -notmatch 'STATUS') { throw '--check printed no status table' }
+            } else {
+              if ($rc -ne 0 -or $chk -notmatch '(?m)^\s+READY / HAZIR\s*$') { throw "expected exit 0 and READY, got $rc" }
+              if ($chk -notmatch 'Free port\s*:\s*3001') { throw 'expected the port check to pick 3001' }
+            }
+          } catch {
+            Annotate "launcher test failed: $($_.Exception.Message)"
+            throw
+          } finally {
+            if (-not $p.HasExited) { taskkill /PID $p.Id /T /F | Out-Null }
+          }
 
       # ---------------- macOS / Linux ----------------
       - name: '[posix] --check before setup must exit 1'
