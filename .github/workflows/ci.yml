@@ -1,0 +1,325 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: kaynak-kodlar
+
+jobs:
+  build-test:
+    name: ${{ matrix.os }} / node ${{ matrix.node }} / py ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Windows (stand-ins for Windows 10/11; x64 and ARM64)
+          - { os: windows-2022,    node: '22',    python: '3.11' }
+          - { os: windows-2025,    node: '24',    python: '3.13' }
+          - { os: windows-11-arm,  node: '24',    python: '3.13' }
+          # macOS (Intel and Apple Silicon)
+          - { os: macos-15-intel,  node: '22',    python: '3.11' }
+          - { os: macos-15,        node: '24',    python: '3.13' }
+          - { os: macos-26,        node: '24',    python: '3.11' }
+          # Linux (x64 and ARM64)
+          - { os: ubuntu-22.04,    node: '22',    python: '3.11' }
+          - { os: ubuntu-24.04,    node: '24',    python: '3.13' }
+          - { os: ubuntu-24.04-arm, node: '24',   python: '3.13' }
+          # Oldest supported Node (engines field) and the newest LTS used by the Docker image
+          - { os: ubuntu-24.04,    node: '20.9.0', python: '3.11' }
+          - { os: ubuntu-24.04,    node: '26',    python: '3.13' }
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: kaynak-kodlar/package-lock.json
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm run build
+
+      - run: pip install -r requirements.txt
+      - run: python -m spotdl --version
+
+      # Starts the built app on a free port, checks the API, stops it again.
+      - run: node scripts/smoke-test.mjs
+
+  docker:
+    name: docker compose
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      # The compose file mounts ../Indirilen-Muzikler; make it writable for the container user.
+      - run: mkdir -p ../Indirilen-Muzikler && chmod 777 ../Indirilen-Muzikler
+
+      - run: docker compose build
+      - run: docker compose up -d
+
+      - name: Wait for healthy container
+        run: |
+          for i in $(seq 1 40); do
+            state=$(docker inspect -f '{{.State.Health.Status}}' spotdl-ui)
+            echo "health: $state"
+            [ "$state" = "healthy" ] && exit 0
+            sleep 3
+          done
+          docker compose logs
+          exit 1
+
+      - run: node scripts/smoke-test.mjs http://127.0.0.1:3000
+      - run: docker compose exec -T spotdl-ui ffmpeg -version
+      - run: docker compose exec -T spotdl-ui python3 -m spotdl --version
+      - run: docker compose exec -T spotdl-ui deno --version
+
+      - name: Container must not run as root
+        run: |
+          uid=$(docker compose exec -T spotdl-ui id -u)
+          echo "uid=$uid"
+          [ "$uid" != "0" ]
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - if: always()
+        run: docker compose down -v
+
+  # Runs the REAL launcher scripts (what a beginner double-clicks) unattended on every OS:
+  # first-run setup (venv, pip, ffmpeg/deno, npm ci, build), start, smoke test, shut down.
+  # Windows steps use pwsh (PID + process-tree control); macOS/Linux steps use bash.
+  launcher:
+    name: launcher ${{ matrix.os }} / node ${{ matrix.node }} / py ${{ matrix.python }}${{ matrix.experimental && ' [EXPERIMENTAL]' || '' }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    continue-on-error: ${{ matrix.experimental == true }}
+    defaults:
+      run:
+        working-directory: . # the launchers live in the repo root (overrides the workflow default)
+    env:
+      YPU_NO_BROWSER: '1'
+      YPU_NO_PAUSE: '1'
+      YPU_PORT_START: '3000'
+      SCRIPT: ${{ matrix.script }}
+      # ffmpeg/deno downloads are expected to fail on Windows ARM64: warn only there
+      WARN_ONLY: ${{ matrix.os == 'windows-11-arm' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-2022,     node: '22', python: '3.11', script: Start-Windows.bat }
+          - { os: windows-2025,     node: '24', python: '3.13', script: Start-Windows.bat }
+          - { os: windows-11-arm,   node: '24', python: '3.13', script: Start-Windows.bat }
+          - { os: macos-15,         node: '24', python: '3.13', script: Start-Mac.command }
+          - { os: macos-15-intel,   node: '24', python: '3.11', script: Start-Mac.command }
+          - { os: macos-26,         node: '24', python: '3.13', script: Start-Mac.command }
+          - { os: ubuntu-22.04,     node: '22', python: '3.11', script: Start-Linux.sh }
+          - { os: ubuntu-24.04,     node: '24', python: '3.13', script: Start-Linux.sh }
+          - { os: ubuntu-24.04-arm, node: '24', python: '3.13', script: Start-Linux.sh }
+          # Newest Python the launcher allows; a pip failure here is a finding, not a red build.
+          - { os: windows-2025,     node: '24', python: '3.14', script: Start-Windows.bat, experimental: true }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+
+      # ---------------- Windows ----------------
+      - name: '[win] --check before setup must exit 1'
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $out = & cmd.exe /d /c ".\$env:SCRIPT --check" | Out-String
+          $rc = $LASTEXITCODE
+          Write-Host $out
+          Write-Host "exit code: $rc"
+          if ($rc -ne 1) { throw "expected exit code 1 before setup, got $rc" }
+          exit 0
+
+      - name: '[win] start the launcher in the background'
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $bat = Join-Path $env:GITHUB_WORKSPACE $env:SCRIPT
+          $p = Start-Process -FilePath cmd.exe -ArgumentList '/d', '/c', "`"$bat`"" -WorkingDirectory $env:GITHUB_WORKSPACE `
+            -RedirectStandardOutput "$env:RUNNER_TEMP\launcher.out.log" `
+            -RedirectStandardError "$env:RUNNER_TEMP\launcher.err.log" -WindowStyle Hidden -PassThru
+          Set-Content -Path "$env:RUNNER_TEMP\launcher.pid" -Value $p.Id
+          Write-Host "launcher pid $($p.Id)"
+
+      - name: '[win] wait for the app (max 12 min), then smoke test'
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $launcher = [int](Get-Content "$env:RUNNER_TEMP\launcher.pid")
+          $deadline = (Get-Date).AddMinutes(12)
+          $up = $false
+          while (-not $up -and (Get-Date) -lt $deadline) {
+            try { $up = (Invoke-WebRequest -Uri http://127.0.0.1:3000/api/queue -UseBasicParsing -TimeoutSec 5).StatusCode -eq 200 } catch { }
+            if (-not $up -and -not (Get-Process -Id $launcher -ErrorAction SilentlyContinue)) {
+              Get-Content "$env:RUNNER_TEMP\launcher.out.log", "$env:RUNNER_TEMP\launcher.err.log" | Write-Host
+              throw 'the launcher exited before the app answered'
+            }
+            if (-not $up) { Start-Sleep -Seconds 5 }
+          }
+          if (-not $up) { throw 'the app did not answer within 12 minutes' }
+          node kaynak-kodlar/scripts/smoke-test.mjs http://127.0.0.1:3000
+          if ($LASTEXITCODE -ne 0) { throw 'smoke test failed' }
+          exit 0
+
+      - name: '[win] setup results (venv, spotdl, ffmpeg, download folder)'
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # the launcher uses the short %LOCALAPPDATA% folder when the repo path is long
+          $py = @("$env:GITHUB_WORKSPACE\kaynak-kodlar\.venv\Scripts\python.exe", "$env:LOCALAPPDATA\YPU-Music\venv\Scripts\python.exe") |
+            Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $py) { throw 'private virtualenv python not found' }
+          & $py -c "import sys, spotdl, yt_dlp; print('venv python', sys.version.split()[0], '(matrix asked for ${{ matrix.python }})')"
+          if ($LASTEXITCODE -ne 0) { throw 'import spotdl, yt_dlp failed in the venv' }
+          $ff = (Get-Command ffmpeg -ErrorAction SilentlyContinue).Source
+          if (-not $ff -and (Test-Path "$env:USERPROFILE\.spotdl\ffmpeg.exe")) { $ff = "$env:USERPROFILE\.spotdl\ffmpeg.exe" }
+          $ffok = $false
+          if ($ff) { $v = & $ff -version; $ffok = ($LASTEXITCODE -eq 0); Write-Host "ffmpeg: $ff ($($v | Select-Object -First 1))" }
+          if (-not $ffok) {
+            if ($env:WARN_ONLY -eq 'true') { Write-Host '::warning::ffmpeg is missing (expected on Windows ARM64)' } else { throw 'ffmpeg is not working' }
+          }
+          if (-not (Test-Path "$env:GITHUB_WORKSPACE\Indirilen-Muzikler" -PathType Container)) { throw 'Indirilen-Muzikler folder missing' }
+          exit 0
+
+      - name: '[win] --check while the app runs (port 3000 is busy, so 3001)'
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $out = & cmd.exe /d /c ".\$env:SCRIPT --check" | Out-String
+          $rc = $LASTEXITCODE
+          Write-Host $out
+          Write-Host "exit code: $rc"
+          if ($env:WARN_ONLY -eq 'true') {
+            # a missing ffmpeg/deno makes --check exit 1 here; the table must still be printed
+            if ($out -notmatch 'STATUS') { throw '--check printed no status table' }
+            exit 0
+          }
+          if ($rc -ne 0 -or $out -notmatch '(?m)^\s+READY / HAZIR\s*$') { throw "expected exit 0 and READY, got $rc" }
+          if ($out -notmatch 'Free port\s*:\s*3001') { throw 'expected the port check to pick 3001' }
+          exit 0
+
+      - name: '[win] stop the server and every child'
+        if: always() && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (Test-Path "$env:RUNNER_TEMP\launcher.pid") { taskkill /PID (Get-Content "$env:RUNNER_TEMP\launcher.pid") /T /F }
+          exit 0
+
+      # ---------------- macOS / Linux ----------------
+      - name: '[posix] --check before setup must exit 1'
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          rc=0; bash "./$SCRIPT" --check >"$RUNNER_TEMP/check1.log" 2>&1 || rc=$?
+          cat "$RUNNER_TEMP/check1.log"; echo "exit code: $rc"
+          [ "$rc" = "1" ] || { echo "expected exit code 1 before setup, got $rc"; exit 1; }
+
+      - name: '[posix] start the launcher in the background'
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -m  # own process group, so the whole tree can be killed later
+          nohup bash "./$SCRIPT" >"$RUNNER_TEMP/launcher.out.log" 2>&1 </dev/null &
+          echo $! >"$RUNNER_TEMP/launcher.pid"
+          echo "launcher pid $!"
+
+      - name: '[posix] wait for the app (max 12 min), then smoke test'
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          pid=$(cat "$RUNNER_TEMP/launcher.pid"); up=0
+          for _ in $(seq 1 144); do
+            if curl -fsS -m 5 http://127.0.0.1:3000/api/queue >/dev/null 2>&1; then up=1; break; fi
+            if ! kill -0 "$pid" 2>/dev/null; then
+              cat "$RUNNER_TEMP/launcher.out.log"; echo 'the launcher exited before the app answered'; exit 1
+            fi
+            sleep 5
+          done
+          [ "$up" = "1" ] || { echo 'the app did not answer within 12 minutes'; exit 1; }
+          node kaynak-kodlar/scripts/smoke-test.mjs http://127.0.0.1:3000
+
+      - name: '[posix] setup results (venv, spotdl, ffmpeg, download folder)'
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          py=kaynak-kodlar/.venv/bin/python
+          [ -x "$py" ] || { echo 'private virtualenv python not found'; exit 1; }
+          "$py" -c "import sys, spotdl, yt_dlp; print('venv python', sys.version.split()[0], '(matrix asked for ${{ matrix.python }})')"
+          ff=$(command -v ffmpeg || true)
+          if [ -z "$ff" ] && [ -x "$HOME/.spotdl/ffmpeg" ]; then ff="$HOME/.spotdl/ffmpeg"; fi
+          [ -n "$ff" ] || { echo 'ffmpeg not found'; exit 1; }
+          "$ff" -version | head -n 1
+          [ -d Indirilen-Muzikler ] || { echo 'Indirilen-Muzikler folder missing'; exit 1; }
+
+      - name: '[posix] --check while the app runs (port 3000 is busy, so 3001)'
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          rc=0; bash "./$SCRIPT" --check >"$RUNNER_TEMP/check2.log" 2>&1 || rc=$?
+          cat "$RUNNER_TEMP/check2.log"; echo "exit code: $rc"
+          [ "$rc" = "0" ] || { echo "expected exit code 0, got $rc"; exit 1; }
+          grep -Eq '^ +READY / HAZIR *$' "$RUNNER_TEMP/check2.log" || { echo 'no READY line'; exit 1; }
+          grep -Eq 'Free port *: 3001' "$RUNNER_TEMP/check2.log" || { echo 'expected the port check to pick 3001'; exit 1; }
+
+      - name: '[posix] stop the server and every child'
+        if: always() && runner.os != 'Windows'
+        shell: bash
+        run: |
+          pid=$(cat "$RUNNER_TEMP/launcher.pid" 2>/dev/null || true)
+          if [ -n "$pid" ]; then
+            kill -TERM -- "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null || true
+            sleep 2; kill -KILL -- "-$pid" 2>/dev/null || true
+          fi
+          pkill -f 'next start' || true  # fallback; the runner VM is private to this job
+
+      # ---------------- logs (all OSes) ----------------
+      - name: Collect logs
+        if: always()
+        shell: bash
+        run: |
+          d="$RUNNER_TEMP/launcher-logs"; mkdir -p "$d"; n=0
+          cp "$RUNNER_TEMP"/launcher.*log "$d"/ 2>/dev/null || true
+          for v in "$GITHUB_WORKSPACE/kaynak-kodlar/.venv" "${LOCALAPPDATA:-/nonexistent}/YPU-Music/venv"; do
+            n=$((n + 1))
+            for f in "$v"/ypu-*.log; do [ -f "$f" ] && cp "$f" "$d/venv$n-$(basename "$f")"; done
+          done
+          ls -l "$d"
+
+      - name: Show log tails on failure
+        if: failure()
+        shell: bash
+        run: |
+          for f in "$RUNNER_TEMP"/launcher-logs/*; do echo "::group::$f"; tail -n 100 "$f"; echo '::endgroup::'; done
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: launcher-logs-${{ matrix.os }}-node${{ matrix.node }}-py${{ matrix.python }}
+          path: ${{ runner.temp }}/launcher-logs
+          if-no-files-found: ignore
