@@ -2,9 +2,6 @@
 
 *Çetrefilli adamların kulübü.*
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![CI](https://github.com/mgurlek/ypu-music/actions/workflows/ci.yml/badge.svg)](https://github.com/mgurlek/ypu-music/actions/workflows/ci.yml)
-
 **[English](#english) | [Türkçe](#türkçe)**
 
 ---
